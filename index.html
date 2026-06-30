@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guess the Number</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 50%, #fef9c3 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .container {
+    background: #ffffff;
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+    width: 100%;
+    max-width: 460px;
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    padding: 28px 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    top: -60px; right: -40px;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    bottom: -30px; left: -20px;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    color: #e0e7ff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .header h1 { color: #fff; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+  .header p { color: #c7d2fe; font-size: 13px; margin-top: 4px; font-weight: 600; }
+  .body { padding: 28px 32px 32px; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+  .diff-row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .diff-btn {
+    flex: 1;
+    padding: 8px 4px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+  }
+  .diff-btn .emoji { display: block; font-size: 18px; margin-bottom: 2px; }
+  .diff-btn:hover { border-color: #a5b4fc; color: #4f46e5; background: #eef2ff; }
+  .diff-btn.active { border-color: #6366f1; background: #eef2ff; color: #4338ca; }
+  .range-badge { text-align: center; margin-bottom: 22px; }
+  .range-badge span {
+    display: inline-block;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 18px;
+    border-radius: 20px;
+  }
+  .guess-row { display: flex; gap: 10px; margin-bottom: 14px; }
+  #guessInput {
+    flex: 1;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e293b;
+    padding: 12px 18px;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.18s;
+    -moz-appearance: textfield;
+  }
+  #guessInput::-webkit-outer-spin-button,
+  #guessInput::-webkit-inner-spin-button { -webkit-appearance: none; }
+  #guessInput:focus { border-color: #6366f1; background: #fff; }
+  #guessInput:disabled { opacity: 0.5; cursor: not-allowed; }
+  #guessBtn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 22px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.18s, transform 0.1s;
+    white-space: nowrap;
+  }
+  #guessBtn:hover { opacity: 0.88; }
+  #guessBtn:active { transform: scale(0.97); }
+  #guessBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .feedback-box {
+    min-height: 64px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    text-align: center;
+    background: #f8fafc;
+    border: 2px dashed #e2e8f0;
+    transition: all 0.25s;
+  }
+  .feedback-box.hint-low  { background: #fef3c7; border: 2px solid #fcd34d; }
+  .feedback-box.hint-high { background: #dbeafe; border: 2px solid #93c5fd; }
+  .feedback-box.win       { background: #dcfce7; border: 2px solid #4ade80; }
+  .feedback-box.lose      { background: #fee2e2; border: 2px solid #f87171; }
+  .feedback-emoji { font-size: 26px; }
+  .feedback-text { font-size: 14px; font-weight: 700; color: #1e293b; }
+  .feedback-sub  { font-size: 12px; color: #64748b; font-weight: 600; }
+  .stats-row { display: flex; gap: 10px; margin-bottom: 20px; }
+  .stat-card {
+    flex: 1;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stat-value { font-size: 22px; font-weight: 900; color: #4f46e5; line-height: 1; }
+  .stat-label { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+  .history-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; }
+  #historyWrap { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; margin-bottom: 20px; }
+  .pill { font-size: 12px; font-weight: 800; padding: 4px 11px; border-radius: 20px; border: 1.5px solid; }
+  .pill.low  { background: #fef9c3; border-color: #fde047; color: #713f12; }
+  .pill.high { background: #dbeafe; border-color: #93c5fd; color: #1e3a8a; }
+  .pill.win  { background: #dcfce7; border-color: #4ade80; color: #14532d; }
+  #newGameBtn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  #newGameBtn:hover { border-color: #6366f1; color: #4f46e5; background: #eef2ff; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="tag">SkillCraft · Task 02</div>
+    <h1>🎯 Guess the Number</h1>
+    <p>A random number is waiting to be found!</p>
+  </div>
+  <div class="body">
+    <div class="section-label">Choose Difficulty</div>
+    <div class="diff-row">
+      <button class="diff-btn active" data-min="1" data-max="10" data-tries="5">
+        <span class="emoji">😊</span>Easy<br><small>1–10</small>
+      </button>
+      <button class="diff-btn" data-min="1" data-max="50" data-tries="8">
+        <span class="emoji">🤔</span>Medium<br><small>1–50</small>
+      </button>
+      <button class="diff-btn" data-min="1" data-max="100" data-tries="10">
+        <span class="emoji">🔥</span>Hard<br><small>1–100</small>
+      </button>
+    </div>
+    <div class="range-badge">
+      <span id="rangeLabel">Guess a number between 1 and 10</span>
+    </div>
+    <div class="guess-row">
+      <input type="number" id="guessInput" placeholder="?" min="1" max="10" />
+      <button id="guessBtn">Guess!</button>
+    </div>
+    <div class="feedback-box" id="feedbackBox">
+      <span class="feedback-emoji">🤫</span>
+      <span class="feedback-text">Make your first guess!</span>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="attemptsLeft">5</div>
+        <div class="stat-label">Tries Left</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="attemptsMade">0</div>
+        <div class="stat-label">Guesses</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="winsCount">0</div>
+        <div class="stat-label">Wins 🏆</div>
+      </div>
+    </div>
+    <div class="history-label">Your Guesses</div>
+    <div id="historyWrap"></div>
+    <button id="newGameBtn">🔄 New Game</button>
+  </div>
+</div>
+<script>
+  const diffBtns=document.querySelectorAll('.diff-btn'),rangeLabel=document.getElementById('rangeLabel'),guessInput=document.getElementById('guessInput'),guessBtn=document.getElementById('guessBtn'),feedbackBox=document.getElementById('feedbackBox'),attemptsLeft=document.getElementById('attemptsLeft'),attemptsMade=document.getElementById('attemptsMade'),winsCount=document.getElementById('winsCount'),historyWrap=document.getElementById('historyWrap'),newGameBtn=document.getElementById('newGameBtn');
+  let secret,min,max,maxTries,triesLeft,guesses,wins=0,gameOver=false;
+  function setFeedback(emoji,text,sub,cls){feedbackBox.className='feedback-box'+(cls?' '+cls:'');feedbackBox.innerHTML=`<span class="feedback-emoji">${emoji}</span><span class="feedback-text">${text}</span>`+(sub?`<span class="feedback-sub">${sub}</span>`:'')}
+  function addPill(num,type){const p=document.createElement('span');p.className='pill '+type;p.textContent=num;historyWrap.appendChild(p)}
+  function startGame(){secret=Math.floor(Math.random()*(max-min+1))+min;triesLeft=maxTries;guesses=0;gameOver=false;historyWrap.innerHTML='';guessInput.value='';guessInput.disabled=false;guessInput.min=min;guessInput.max=max;guessBtn.disabled=false;attemptsLeft.textContent=triesLeft;attemptsMade.textContent=guesses;rangeLabel.textContent=`Guess a number between ${min} and ${max}`;setFeedback('🤫','Make your first guess!','','');guessInput.focus()}
+  function applyDiff(btn){diffBtns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');min=parseInt(btn.dataset.min);max=parseInt(btn.dataset.max);maxTries=parseInt(btn.dataset.tries);startGame()}
+  diffBtns.forEach(btn=>btn.addEventListener('click',()=>applyDiff(btn)));
+  guessBtn.addEventListener('click',doGuess);
+  guessInput.addEventListener('keydown',e=>{if(e.key==='Enter')doGuess()});
+  newGameBtn.addEventListener('click',startGame);
+  function doGuess(){if(gameOver)return;const val=parseInt(guessInput.value);if(isNaN(val)||val<min||val>max){setFeedback('⚠️',`Enter a number between ${min} and ${max}.`,'','');guessInput.focus();return}guesses++;triesLeft--;attemptsMade.textContent=guesses;attemptsLeft.textContent=triesLeft;guessInput.value='';if(val===secret){gameOver=true;wins++;winsCount.textContent=wins;addPill(val,'win');setFeedback('🎉',`You got it! The number was ${secret}!`,`Found in ${guesses} guess${guesses>1?'es':''}!`,'win');guessInput.disabled=true;guessBtn.disabled=true}else if(triesLeft===0){gameOver=true;addPill(val,val<secret?'low':'high');setFeedback('😢',`Out of tries! The number was ${secret}.`,'Better luck next time!','lose');guessInput.disabled=true;guessBtn.disabled=true}else if(val<secret){addPill(val,'low');const h=triesLeft===1?'Last try!':`${triesLeft} tries left.`;setFeedback('📈','Too low! Go higher.',h,'hint-low')}else{addPill(val,'high');const h=triesLeft===1?'Last try!':`${triesLeft} tries left.`;setFeedback('📉','Too high! Go lower.',h,'hint-high')}guessInput.focus()}
+  applyDiff(diffBtns[0]);
+</script>
+</body>
+</html>
